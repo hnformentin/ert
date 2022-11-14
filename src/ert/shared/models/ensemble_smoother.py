@@ -37,7 +37,7 @@ class EnsembleSmoother(BaseRunModel):
         self,
         evaluator_server_config: EvaluatorServerConfig,
         model_name: str = "ensemble smoother",
-    ) -> Union[RunContext, None]:
+    ) -> Optional[RunContext]:
         loop = asyncio.get_running_loop()
         threadpool = concurrent.futures.ThreadPoolExecutor()
 
@@ -81,7 +81,16 @@ class EnsembleSmoother(BaseRunModel):
                 prior_context.iteration
             )
 
-        self.checkHaveSufficientRealizations(num_successful_realizations)  # type: ignore
+        try:
+            self.checkHaveSufficientRealizations(num_successful_realizations)
+        except ErtRunError as e:
+            event = _ert_com_protocol.node_status_builder(
+                status="EXPERIMENT_FAILED", experiment_id=self.id_
+            )
+            event.experiment.message = str(e)
+            await self.dispatch(event)
+            return prior_context
+
         self.setPhaseName("Post processing...", indeterminate=True)
 
         await self._run_hook(
@@ -171,7 +180,15 @@ class EnsembleSmoother(BaseRunModel):
                 rerun_context.iteration,
             )
 
-        self.checkHaveSufficientRealizations(num_successful_realizations)  # type: ignore
+        try:
+            self.checkHaveSufficientRealizations(num_successful_realizations)
+        except ErtRunError as e:
+            event = _ert_com_protocol.node_status_builder(
+                status="EXPERIMENT_FAILED", experiment_id=self.id_
+            )
+            event.experiment.message = str(e)
+            await self.dispatch(event)
+            return prior_context
 
         self.setPhaseName("Post processing...", indeterminate=True)
         await self._run_hook(
@@ -194,7 +211,7 @@ class EnsembleSmoother(BaseRunModel):
 
     def runSimulations(
         self, evaluator_server_config: EvaluatorServerConfig
-    ) -> Union[RunContext, None]:
+    ) -> Optional[RunContext]:
         return asyncio.run(self.run(evaluator_server_config), debug=True)
 
     def create_context(self, prior_context: Optional[RunContext] = None) -> RunContext:

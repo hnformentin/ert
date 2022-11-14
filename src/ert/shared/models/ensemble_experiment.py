@@ -1,7 +1,7 @@
 import asyncio
 import concurrent
 import logging
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 import _ert_com_protocol
 from ert._c_wrappers.enkf import RunContext
@@ -18,16 +18,16 @@ experiment_logger = logging.getLogger("ert.experiment_server.ensemble_experiment
 class EnsembleExperiment(BaseRunModel):
     def __init__(
         self,
-        id_: str,
         simulation_arguments: Dict[str, Any],
         ert: EnKFMain,
         queue_config: QueueConfig,
+        id_: str,
     ):
         super().__init__(simulation_arguments, ert, queue_config, id_)
 
     async def run(
         self, evaluator_server_config: EvaluatorServerConfig, model_name: str
-    ) -> Union[RunContext, None]:
+    ) -> Optional[RunContext]:
         experiment_logger.debug(f"Starting {model_name}...")
         event = _ert_com_protocol.node_status_builder(
             status="EXPERIMENT_STARTED", experiment_id=self.id_
@@ -80,7 +80,7 @@ class EnsembleExperiment(BaseRunModel):
             )
 
             try:
-                self.checkHaveSufficientRealizations(num_successful_realizations)  # type: ignore # _simulation_arguments is a dict
+                self.checkHaveSufficientRealizations(num_successful_realizations)
             except ErtRunError as e:
                 event = _ert_com_protocol.node_status_builder(
                     status="EXPERIMENT_FAILED", experiment_id=self.id_
@@ -113,7 +113,7 @@ class EnsembleExperiment(BaseRunModel):
 
     def runSimulations(
         self, evaluator_server_config: EvaluatorServerConfig
-    ) -> Union[RunContext, None]:
+    ) -> Optional[RunContext]:
         return asyncio.run(
             self.run(evaluator_server_config, model_name="ensemble experiment"),
             debug=True,

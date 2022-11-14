@@ -182,7 +182,7 @@ class BaseRunModel:
                 run_context = self.runSimulations(
                     evaluator_server_config=evaluator_server_config,
                 )
-                self._completed_realizations_mask = run_context.mask  # type: ignore # should we implement an if statement with toggling?
+                self._completed_realizations_mask = run_context.mask
         except ErtRunError as e:
             self._completed_realizations_mask = []
             self._failed = True
@@ -199,7 +199,7 @@ class BaseRunModel:
 
     def runSimulations(
         self, evaluator_server_config: EvaluatorServerConfig
-    ) -> Union[RunContext, None]:
+    ) -> Optional[RunContext]:
         raise NotImplementedError("Method must be implemented by inheritors!")
 
     def teardown_context(self) -> None:
@@ -361,7 +361,7 @@ class BaseRunModel:
 
     async def _evaluate(
         self, run_context: RunContext, ee_config: EvaluatorServerConfig
-    ) -> Union[None, int]:
+    ) -> Optional[int]:
         """Start asynchronous evaluation of an ensemble."""
         experiment_logger.debug("_evaluate")
         loop = asyncio.get_running_loop()
@@ -425,7 +425,7 @@ class BaseRunModel:
                         experiment_logger.debug("Server stopped from client")
                     except asyncio.TimeoutError:
                         experiment_logger.debug("Stopping the server from experiment..")
-                        await server.stop()  # type: ignore # server is None only if FeatureToggling.is_enabled("experiment-server")
+                        await server.stop()
             else:
                 # experiment is pending, but the server died, so try cancelling the experiment
                 # then raise the server's exception
@@ -458,7 +458,7 @@ class BaseRunModel:
     @abstractmethod
     async def run(
         self, evaluator_server_config: EvaluatorServerConfig, model_name: str
-    ) -> Union[None, RunContext]:
+    ) -> Optional[RunContext]:
         raise NotImplementedError
 
     async def successful_realizations(self, iter_: int) -> int:

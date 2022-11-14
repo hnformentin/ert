@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional
 
 from ert._c_wrappers.enkf.enkf_main import EnKFMain
 from ert._c_wrappers.enkf.ert_run_context import RunContext
@@ -19,14 +19,16 @@ class SingleTestRun(EnsembleExperiment):
         if num_successful_realizations == 0:
             raise ErtRunError("Simulation failed!")
 
-    def runSimulations(self, evaluator_server_config: EvaluatorServerConfig) -> Union[None, RunContext]:  # type: ignore
+    def runSimulations(
+        self, evaluator_server_config: EvaluatorServerConfig
+    ) -> Optional[RunContext]:
         return asyncio.run(
             self.run(evaluator_server_config, "single realisation test"), debug=True
         )
 
     async def run(
         self, evaluator_server_config: "EvaluatorServerConfig", model_name: str
-    ) -> Union[None, RunContext]:
+    ) -> Optional[RunContext]:
         return await super().run(evaluator_server_config, model_name)
 
     @classmethod
