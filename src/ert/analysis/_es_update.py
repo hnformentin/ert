@@ -293,6 +293,9 @@ def _get_obs_and_measure_data(
     observation_values = []
     observation_errors = []
     for obs_key, obs_active_list in selected_observations:
+        print(obs_key)
+        print(obs_active_list)
+        import pdb; pdb.set_trace()
         group, observation = obs.get_dataset(obs_key)
         if obs_active_list:
             index = observation.coords.to_index()[obs_active_list]
@@ -336,7 +339,7 @@ def _load_observations_and_responses(
     selected_observations: List[Tuple[str, List[int]]],
 ) -> Any:
     ens_active_list = tuple(i for i, b in enumerate(ens_mask) if b)
-
+    import pdb; pdb.set_trace()
     S, observations, errors, obs_keys = _get_obs_and_measure_data(
         obs,
         source_fs,
@@ -392,6 +395,7 @@ def analysis_ES(
     progress_callback: ProgressCallback,
 ) -> None:
     iens_active_index = [i for i in range(len(ens_mask)) if ens_mask[i]]
+    import pdb; pdb.set_trace()
 
     progress_callback(Progress(Task("Loading data", 1, 3), None))
     temp_storage = _create_temporary_parameter_storage(

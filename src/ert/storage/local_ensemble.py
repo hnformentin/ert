@@ -219,16 +219,21 @@ class LocalEnsembleReader:
 
     @lru_cache
     def load_response(self, key: str, realizations: Tuple[int, ...]) -> xr.Dataset:
-        loaded = []
-        for realization in realizations:
-            input_path = self.mount_point / f"realization-{realization}" / f"{key}.nc"
-            if not input_path.exists():
-                raise KeyError(f"No response for key {key}, realization: {realization}")
-            ds = xr.open_dataset(input_path, engine="scipy")
-            loaded.append(ds)
-        response = xr.combine_by_coords(loaded)
-        assert isinstance(response, xr.Dataset)
-        return response
+        import pdb; pdb.set_trace()
+        try:
+            loaded = []
+            for realization in realizations:
+                input_path = self.mount_point / f"realization-{realization}" / f"{key}.nc"
+                if not input_path.exists():
+                    raise KeyError(f"No response for key {key}, realization: {realization}")
+                ds = xr.open_dataset(input_path, engine="scipy")
+                loaded.append(ds)
+            response = xr.combine_by_coords(loaded)
+            assert isinstance(response, xr.Dataset)
+            return response
+        except TypeError as e:
+            print(e)
+            import pdb; pdb.set_trace()
 
 
 class LocalEnsembleAccessor(LocalEnsembleReader):
